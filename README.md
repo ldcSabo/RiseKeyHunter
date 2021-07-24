@@ -1,6 +1,6 @@
 # RiseKeyHunter
 
-Paylaşılan rise keylerini otomatikmen deneyip sonuçları size geri bildirir.
+Discord sunucularında paylaşılan rise keylerini otomatikmen deneyip sonuçları size geri bildirir.
 
 # Requirements (Gerekli şeyler)
 
