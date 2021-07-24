@@ -1,4 +1,5 @@
 using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using System;
@@ -47,11 +48,18 @@ namespace RiseKeyHunter
             {
                 await _client.LoginAsync(0, usertoken);
             }
-            catch
+            catch (HttpException e)
             {
-                Console.WriteLine("Hatalı bir token girildi.");
-                Console.ReadLine();
-                return;
+                if (e.Message.Contains("Unauthorized"))
+                {
+                    Console.WriteLine("Hatalı bir token girildi.");
+                    Console.ReadLine();
+                    return;
+                }
+                else
+                {
+                    throw;
+                }
             }
             string content = getToken();
             Regex find = new Regex(@"\(('[a-z0-9_\-]+')\)");
