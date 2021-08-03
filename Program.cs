@@ -45,11 +45,11 @@ namespace RiseKeyHunter
                 string option = Console.ReadLine();
                 if (option.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    this.useTesseract = true;
+                    this.useTesseract = false;
                 }
                 else
                 {
-                    this.useTesseract = false;
+                    return;
                 }
             }
             Console.Write("Discord hesabınızın tokenini giriniz : ");
