@@ -4,12 +4,15 @@ using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Tesseract;
 
 namespace RiseKeyHunter
 {
@@ -98,7 +101,7 @@ namespace RiseKeyHunter
             }
 
             Console.WriteLine("Kanal ID'lerini yazınız : ");
-           
+
             for (int i = 0; i < count; ++i)
             {
                 try
@@ -156,24 +159,56 @@ namespace RiseKeyHunter
             if (message.Author.Id == _client.CurrentUser.Id)
                 return;
 
-            string content = message.Content;
+
+            string content = "empty";
+
+            if (message.Attachments.Count > 0)
+            {
+                var enumurator = message.Attachments.GetEnumerator();
+                enumurator.MoveNext();
+                string url = enumurator.Current.Url;
+                byte[] data = new WebClient().DownloadData(url);
+
+                File.WriteAllBytes("image.png", data);
+
+                Pix pix = Pix.LoadFromFile("image.png");
+
+                var ocr = new TesseractEngine("C:/Program Files/Tesseract-OCR/tessdata", "eng", EngineMode.Default);
+                Page page = ocr.Process(pix, PageSegMode.Auto);
+
+                content = page.GetText();
+            }
+            else
+            {
+                content = message.Content;
+            }
+
+            if (content.Equals("empty"))
+            {
+                return;
+            }
 
             foreach (string line in content.Split('\n'))
             {
-                Regex code = new Regex(@"\bRISE-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-\b[0-9A-Z]{4}\b");
-                foreach (var match in code.Matches(line))
+                List<Regex> regexList = new List<Regex>();
+
+                regexList.Add(new Regex(@"RISE-[0-9A-Z]{4}-[0-9A-Z]{4}-[0-9A-Z]{4}-\b[0-9A-Z]{4}"));
+                regexList.Add(new Regex(@"RISEKINGDOMS-[0-9A-Z]{3}-[0-9A-Z]{4}-[0-9A-Z]{3}"));
+                foreach (var regex in regexList)
                 {
-                    object[] result = this.useCode(match.ToString());
-                    if (result[0].ToString().Contains("True") || result[0].ToString().Contains("true"))
+                    foreach (var match in regex.Matches(line))
                     {
-                        Console.WriteLine("Kod başarıyla kullanılmıştır, yeni krediniz : " + result[1]);
-                    }
-                    else
-                    {
-                        Console.WriteLine("Bu kod hatalı veya kullanılmış : " + result[2]);
+                        object[] result = this.useCode(match.ToString());
+                        if (result[0].ToString().Contains("True") || result[0].ToString().Contains("true"))
+                        {
+                            Console.WriteLine("Kod başarıyla kullanılmıştır, yeni krediniz : " + result[1]);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Bu kod hatalı veya kullanılmış : " + result[2]);
+                        }
                     }
                 }
-                
             }
         }
 
