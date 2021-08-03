@@ -21,6 +21,7 @@ namespace RiseKeyHunter
         private CookieContainer cookies = new CookieContainer();
         private List<ulong> channelIDS = new List<ulong>();
         private readonly DiscordSocketClient _client;
+        private bool useTesseract = true;
 
         static void Main(string[] args)
         {
@@ -38,6 +39,19 @@ namespace RiseKeyHunter
 
         public async Task MainAsync()
         {
+            if (!Directory.Exists(@"C:\Program Files\Tesseract-OCR"))
+            {
+                Console.WriteLine("Tesseract bulunamadı resimden okuma yapılamayacak, devam etmek ister misiniz?\nEvet için Y\nHayır için N");
+                string option = Console.ReadLine();
+                if (option.Equals("Y", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    this.useTesseract = true;
+                }
+                else
+                {
+                    this.useTesseract = false;
+                }
+            }
             Console.Write("Discord hesabınızın tokenini giriniz : ");
             string usertoken = Console.ReadLine();
             if (usertoken.StartsWith("mfa"))
@@ -162,7 +176,7 @@ namespace RiseKeyHunter
 
             string content = "empty";
 
-            if (message.Attachments.Count > 0)
+            if (message.Attachments.Count > 0 && this.useTesseract)
             {
                 var enumurator = message.Attachments.GetEnumerator();
                 enumurator.MoveNext();
